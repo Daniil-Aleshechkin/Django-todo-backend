@@ -14,11 +14,12 @@ class AccountSerializer(serializers.ModelSerializer):
         }
 
     def save(self):
+        print(self.validated_data)
         account = Account(
             email=self.validated_data['email'], username=self.validated_data['username'])
         password = self.validated_data['password']
         confirmPassword = self.validated_data['confirmPassword']
-
+        
         if password != confirmPassword:
             raise serializers.ValidationError(
                 {'password': 'Passwords must match'})

@@ -22,6 +22,7 @@ def api_create_account_view(request):
             data['token'] = Token.objects.get(user=account).key
         else:
             data = serializer.errors
+            return Response(data=data,status=status.HTTP_400_BAD_REQUEST)
         return Response(data=data)
 
 
