@@ -38,11 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    #3rd party
+    # 3rd party
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
-    #own
-    'tasks'
+    # own
+    'tasks',
+    'account',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +78,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'todo_list.wsgi.application'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication'
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated'
+    ]
+}
+
+AUTH_USER_MODEL = 'account.Account'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
@@ -127,6 +139,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 CORS_ORIGIN_WHITELIST = [
-'http://localhost:3000',
-'http://localhost:3001'
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://192.168.0.11:25565',
 ]

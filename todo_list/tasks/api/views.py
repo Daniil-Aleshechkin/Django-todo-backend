@@ -1,55 +1,76 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
+from rest_framework.decorators import api_view, permission_classes
 from ..models import Task
 from .serializers import TaskSerializer
 
-@api_view(["GET",])
-def api_detail_task_view(request,id):
+
+@api_view(["GET", ])
+def api_detail_task_view(request, id):
     try:
         task = Task.objects.get(id=id)
     except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) 
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user
+
+    if task.author != user:
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "GET":
         serializer = TaskSerializer(task)
         return Response(serializer.data)
 
-@api_view(["GET",])
+
+@api_view(["GET", ])
 def api_detailall_task_view(request):
     try:
-        task = Task.objects.all()
+        task = Task.objects.filter(author=request.user)
     except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) 
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
-        serializer = TaskSerializer(task,many=True)
+        serializer = TaskSerializer(task, many=True)
         return Response(serializer.data)
 
-@api_view(["PUT",])
-def api_update_task_view(request,id):
+
+@api_view(["PUT", ])
+def api_update_task_view(request, id):
     try:
         task = Task.objects.get(id=id)
     except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) 
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user
+
+    if task.author != user:
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "PUT":
-        serializer = TaskSerializer(task,data=request.data)
+        serializer = TaskSerializer(task, data=request.data)
         data = {}
         if serializer.is_valid():
             serializer.save()
             data["success"] = "update successful"
             return Response(data=data)
 
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(["DELETE",])
-def api_delete_task_view(request,id):
+
+@api_view(["DELETE", ])
+def api_delete_task_view(request, id):
     try:
         task = Task.objects.get(id=id)
     except Task.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) 
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    user = request.user
+
+    if task.author != user:
+
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "DELETE":
         operation = task.delete()
@@ -61,18 +82,21 @@ def api_delete_task_view(request,id):
 
         return Response(data=data)
 
-@api_view(["POST",])
+
+@api_view(["POST", ])
 def api_create_task_view(request):
-    
-    task = Task()
+
+    account = request.user
+
+    task = Task(author=account)
     if request.method == "POST":
-        serializer = TaskSerializer(task,data=request.data)
+        serializer = TaskSerializer(task, data=request.data)
         data = {}
         if serializer.is_valid():
             serializer.save()
             return Response(
-            {'id': task.id},
-            status=status.HTTP_201_CREATED, 
-        )
+                {'id': task.id},
+                status=status.HTTP_201_CREATED,
+            )
 
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
